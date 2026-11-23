@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PyLingo Mini App</title>
+    <script src="https://telegram.org"></script>
+    <style>
+        :root {
+            --bg: #ffffff;
+            --text: #1f2937;
+            --green: #58cc02;
+            --green-dark: #46a302;
+            --red: #ff4b4b;
+            --red-dark: #ea2b2b;
+            --border: #e5e7eb;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            min-height: 92vh;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .progress-bg {
+            flex: 1;
+            height: 14px;
+            background: var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--green);
+            transition: width 0.3s ease;
+        }
+        .hearts {
+            font-weight: 800;
+            color: var(--red);
+            font-size: 16px;
+        }
+        .title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+        .code-box {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 16px;
+            border-radius: 14px;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 24px;
+            white-space: pre-wrap;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: auto;
+        }
+        .opt-btn {
+            background: #fff;
+            border: 2px solid var(--border);
+            border-bottom-width: 4px;
+            border-radius: 14px;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+        .opt-btn:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+        }
+        .opt-btn.selected {
+            border-color: #1cb0f6;
+            background: #ddf4ff;
+            color: #1899d6;
+        }
+        .footer {
+            margin-top: 20px;
+            padding-top: 16px;
+        }
+        .check-btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 14px;
+            background: var(--green);
+            box-shadow: 0 4px 0 var(--green-dark);
+            color: white;
+            font-size: 16px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+        }
+        .check-btn:disabled {
+            background: #e5e7eb;
+            box-shadow: none;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+        .feedback {
+            padding: 14px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            font-weight: 600;
+            display: none;
+        }
+        .feedback.ok { background: #d7ffb8; color: #58a700; display: block; }
+        .feedback.err { background: #ffdfe0; color: #ea2b2b; display: block; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="progress-bg"><div class="progress-fill" id="progress"></div></div>
+        <div class="hearts" id="hearts">❤️ 3</div>
+    </div>
+
+    <div class="title" id="question-title">Загрузка...</div>
+    <div class="code-box" id="code-block"></div>
+    <div class="options" id="options-list"></div>
+
+    <div class="footer">
+        <div class="feedback" id="feedback"></div>
+        <button class="check-btn" id="action-btn" disabled>Проверить</button>
+    </div>
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        let step = 0;
+        const totalSteps = 5;
+        let hearts = 3;
+        let xp = 0;
+        let selectedIndex = null;
+        let currentTask = null;
+        let isChecked = false;
+
+        function generateTask() {
+            const types = ['vars', 'strings', 'if', 'lists'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+            if (type === 'vars') {
+                const a = rand(3, 15), b = rand(2, 9);
+                const right = String(a + b);
+                return {
+                    title: "Что выведет этот код?",
+                    code: `coins = ${a}\nbonus = ${b}\nprint(coins + bonus)`,
+                    options: [right, String(a + b + 2), "coins + bonus"].sort(() => Math.random() - 0.5),
+                    right: right,
+                    hint: `Складываем значения переменных: ${a} + ${b} = ${right}.`
+                };
+            }
+            if (type === 'strings') {
+                const a = rand(2, 8), b = rand(2, 8);
+                const right = `${a}${b}`;
+                return {
+                    title: "Что окажется на экране?",
+                    code: `a = "${a}"\nb = "${b}"\nprint(a + b)`,
+                    options: [right, String(a + b), "Ошибка"].sort(() => Math.random() - 0.5),
+                    right: right,
+                    hint: "Числа в кавычках — это текст, поэтому знак + склеивает их."
+                };
+            }
+            if (type === 'if') {
+                const age = rand(10, 25);
+                const right = age >= 18 ? "Вход открыт" : "Рано";
+                return {
+                    title: "Какой текст напечатает программа?",
+                    code: `age = ${age}\nif age >= 18:\n    print("Вход открыт")\nelse:\n    print("Рано")`,
+                    options: ["Вход открыт", "Рано", "Ничего"].sort(() => Math.random() - 0.5),
+                    right: right,
+                    hint: `Переменная age равна ${age}, проверяем условие ${age} >= 18.`
+                };
+            }
+            const items = ["cat", "dog", "fox", "owl"];
+            const idx = rand(0, 3);
+            const right = items[idx];
+            return {
+                title: "Какое слово выведет код?",
+                code: `pets = ["cat", "dog", "fox", "owl"]\nprint(pets[${idx}])`,
+                options: [right, items[(idx + 1) % 4], items[(idx + 2) % 4]].sort(() => Math.random() - 0.5),
+                right: right,
+                hint: "Счет элементов в списке начинается с нуля (0, 1, 2, 3)."
+            };
+        }
+
+        function renderTask() {
+            isChecked = false;
+            selectedIndex = null;
+            document.getElementById('feedback').className = 'feedback';
+            const btn = document.getElementById('action-btn');
+            btn.disabled = true;
+            btn.innerText = "Проверить";
+            btn.style.background = "var(--green)";
+            btn.style.boxShadow = "0 4px 0 var(--green-dark)";
+
+            document.getElementById('progress').style.width = `${(step / totalSteps) * 100}%`;
+            document.getElementById('hearts').innerText = `❤️ ${hearts}`;
+
+            if (hearts <= 0) {
+                document.getElementById('question-title').innerText = "Жизни закончились!";
+                document.getElementById('code-block').innerText = "Попробуй пройти урок еще раз.";
+                document.getElementById('options-list').innerHTML = "";
+                btn.disabled = false;
+                btn.innerText = "Начать заново";
+                btn.onclick = () => { hearts = 3; step = 0; xp = 0; renderTask(); };
+                return;
+            }
+
+            if (step >= totalSteps) {
+                document.getElementById('progress').style.width = "100%";
+                document.getElementById('question-title').innerText = "Урок пройден!";
+                document.getElementById('code-block').innerText = `Отличная работа!\nТы заработал +${xp} XP.`;
+                document.getElementById('options-list').innerHTML = "";
+                btn.disabled = false;
+                btn.innerText = "Пройти еще урок";
+                btn.onclick = () => { step = 0; renderTask(); };
+                return;
+            }
+
+            currentTask = generateTask();
+            document.getElementById('question-title').innerText = currentTask.title;
+            document.getElementById('code-block').innerText = currentTask.code;
+
+            const list = document.getElementById('options-list');
+            list.innerHTML = "";
+            currentTask.options.forEach((opt, i) => {
+                const div = document.createElement('div');
+                div.className = 'opt-btn';
+                div.innerText = opt;
+                div.onclick = () => {
+                    if (isChecked) return;
+                    document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+                    div.classList.add('selected');
+                    selectedIndex = i;
+                    btn.disabled = false;
+                };
+                list.appendChild(div);
+            });
+
+            btn.onclick = checkAnswer;
+        }
+
+        function checkAnswer() {
+            const btn = document.getElementById('action-btn');
+            const fb = document.getElementById('feedback');
+
+            if (!isChecked) {
+                isChecked = true;
+                const chosenText = currentTask.options[selectedIndex];
+                if (chosenText === currentTask.right) {
+                    xp += 10;
+                    step++;
+                    fb.className = "feedback ok";
+                    fb.innerText = "Верно! +10 XP";
+                    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+                } else {
+                    hearts--;
+                    document.getElementById('hearts').innerText = `❤️ ${hearts}`;
+                    fb.className = "feedback err";
+                    fb.innerText = `Ошибка! ${currentTask.hint}`;
+                    btn.style.background = "var(--red)";
+                    btn.style.boxShadow = "0 4px 0 var(--red-dark)";
+                    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+                }
+                btn.innerText = "Далее";
+            } else {
+                renderTask();
+            }
+        }
+
+        renderTask();
+    </script>
+</body>
+</html>
