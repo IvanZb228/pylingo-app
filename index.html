@@ -251,10 +251,9 @@
         if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
             document.getElementById('p-name').innerText = tg.initDataUnsafe.user.first_name;
         }
-
-        const API_URL = "https://0e570e75613bcb2b-37-212-24-253.serveousercontent.com";
+        const API_URL = "https://2fe6227e78d06e24-37-212-24-253.serveousercontent.com";
         const CHANNEL_URL = ["https:", "", "t.me", "slovo_dvoih"].join("/");
-        const AdController = window.Adsgram ? window.Adsgram.init({ blockId: "ВАШ_BLOCK_ID" }) : null;
+        const AdController = window.Adsgram ? window.Adsgram.init({ blockId: "62297" }) : null;
         const userId = tg.initDataUnsafe?.user?.id || 0;
 
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
