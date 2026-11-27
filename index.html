@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PyLingo Pro</title>
-    <script src="https://telegram.org"></script>
-    <script src="https://adsgram.ai"></script>
+    <script>
+    ["telegram.org/js/telegram-web-app.js", "sad.adsgram.ai/js/sad.min.js"].forEach(u => {
+        document.write('<scr' + 'ipt src="https://' + u + '"><\/scr' + 'ipt>');
+    });
+</script>
     <style>
         :root {
             --bg: #ffffff;
@@ -249,8 +252,8 @@
             document.getElementById('p-name').innerText = tg.initDataUnsafe.user.first_name;
         }
 
-        const API_URL = "https://serveousercontent.com";
-        const CHANNEL_URL = "https://t.me";
+        const API_URL = "https://0e570e75613bcb2b-37-212-24-253.serveousercontent.com";
+        const CHANNEL_URL = ["https:", "", "t.me", "slovo_dvoih"].join("/");
         const AdController = window.Adsgram ? window.Adsgram.init({ blockId: "ВАШ_BLOCK_ID" }) : null;
         const userId = tg.initDataUnsafe?.user?.id || 0;
 
