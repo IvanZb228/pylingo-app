@@ -5,134 +5,164 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PyLingo Pro</title>
     <script src="https://telegram.org"></script>
+    <script src="https://adsgram.ai"></script>
     <style>
         :root {
-            --bg: #ffffff; --card: #f8fafc; --text: #3c3c3c; --muted: #afafaf;
-            --green: #58cc02; --green-d: #58a700;
-            --blue: #1cb0f6; --blue-d: #1899d6;
-            --gold: #ffc800; --gold-d: #e5a500;
-            --purple: #ce82ff; --purple-d: #a568cc;
-            --red: #ff4b4b; --red-d: #ea2b2b;
-            --gray: #e5e5e5; --gray-d: #cecece;
+            --bg: #ffffff;
+            --text: #3c3c3c;
+            --muted: #afafaf;
+            --green: #58cc02;
+            --green-dark: #58a700;
+            --blue: #1cb0f6;
+            --blue-dark: #1899d6;
+            --gold: #ffc800;
+            --gold-dark: #e5a500;
+            --purple: #ce82ff;
+            --purple-dark: #a568cc;
+            --red: #ff4b4b;
+            --red-dark: #ea2b2b;
+            --gray: #e5e5e5;
+            --gray-dark: #cecece;
         }
         * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: var(--bg); color: var(--text); margin: 0; padding: 0;
-            display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0; padding: 0;
+            display: flex; flex-direction: column;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
-        @keyframes pop { 0% { opacity: 0; transform: translateY(10px) scale(0.96); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25%, 75% { transform: translateX(-7px); } 50% { transform: translateX(7px); } }
-        .anim-pop { animation: pop 0.25s ease-out forwards; }
-        .anim-shake { animation: shake 0.35s ease; }
-
+        /* Анимации */
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.9) translateY(12px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 7px 0 var(--green-dark), 0 0 0 0 rgba(88, 204, 2, 0.5); }
+            70% { box-shadow: 0 7px 0 var(--green-dark), 0 0 0 14px rgba(88, 204, 2, 0); }
+            100% { box-shadow: 0 7px 0 var(--green-dark), 0 0 0 0 rgba(88, 204, 2, 0); }
+        }
+        .anim-pop { animation: popIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+        .anim-shake { animation: shake 0.4s ease; }
         .top-bar {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 12px 16px; border-bottom: 2px solid var(--gray);
-            background: #fff; position: sticky; top: 0; z-index: 20;
+            padding: 12px 20px; border-bottom: 2px solid var(--gray);
+            background: rgba(255,255,255,0.95); backdrop-filter: blur(8px);
+            position: sticky; top: 0; z-index: 20;
         }
-        .pill { display: flex; align-items: center; gap: 5px; font-weight: 800; font-size: 15px; }
-        .screen { display: none; flex: 1; flex-direction: column; padding: 18px; padding-bottom: 90px; }
+        .stat-pill {
+            display: flex; align-items: center; gap: 6px;
+            font-weight: 800; font-size: 16px;
+            padding: 4px 10px; border-radius: 12px;
+            transition: transform 0.2s;
+        }
+        .screen { display: none; flex: 1; flex-direction: column; padding: 20px; padding-bottom: 95px; }
         .screen.active { display: flex; }
-        .unit-banner {
-            border-radius: 18px; padding: 16px 20px; color: #fff; margin: 10px 0 28px 0;
-            background: linear-gradient(135deg, #58cc02, #46a302); box-shadow: 0 5px 0 var(--green-d);
-        }
-        .unit-banner.u2 { background: linear-gradient(135deg, #1cb0f6, #0088cc); box-shadow: 0 5px 0 var(--blue-d); }
-        .unit-banner small { text-transform: uppercase; font-weight: 800; opacity: 0.9; font-size: 11px; letter-spacing: 0.8px; }
-        .unit-banner h2 { margin: 4px 0 0 0; font-size: 19px; font-weight: 800; }
 
-        .path { display: flex; flex-direction: column; align-items: center; gap: 26px; margin-bottom: 24px; }
+        .unit-card {
+            background: linear-gradient(135deg, #58cc02, #46a302);
+            color: #fff; border-radius: 18px; padding: 18px 20px;
+            margin-bottom: 34px; box-shadow: 0 5px 0 var(--green-dark);
+        }
+        .unit-card small { text-transform: uppercase; font-weight: 800; opacity: 0.9; font-size: 12px; letter-spacing: 0.8px; }
+        .unit-card h2 { margin: 4px 0 0 0; font-size: 20px; font-weight: 800; }
+
+        .path { display: flex; flex-direction: column; align-items: center; gap: 30px; padding-top: 10px; }
         .node { position: relative; display: flex; flex-direction: column; align-items: center; }
-        .tag {
-            position: absolute; top: -34px; background: #fff; color: var(--green);
-            border: 2px solid var(--gray); padding: 5px 12px; border-radius: 12px;
-            font-weight: 900; font-size: 12px; text-transform: uppercase;
-            animation: float 1.4s ease-in-out infinite; box-shadow: 0 2px 5px rgba(0,0,0,0.08); white-space: nowrap;
+        .bubble {
+            position: absolute; top: -38px; background: #fff; color: var(--green);
+            border: 2px solid var(--gray); padding: 6px 14px; border-radius: 14px;
+            font-weight: 900; font-size: 13px; text-transform: uppercase;
+            animation: float 1.5s ease-in-out infinite;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.08); white-space: nowrap;
         }
         .lvl-btn {
-            width: 72px; height: 66px; border-radius: 50%; border: none;
-            background: var(--green); box-shadow: 0 6px 0 var(--green-d);
-            color: #fff; font-size: 26px; font-weight: 900;
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            width: 76px; height: 70px; border-radius: 50%; border: none;
+            background: var(--green); box-shadow: 0 7px 0 var(--green-dark);
+            color: #fff; font-size: 28px; font-weight: 900;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: transform 0.1s, box-shadow 0.1s;
         }
-        .lvl-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--green-d); }
-        .lvl-btn.u2 { background: var(--blue); box-shadow: 0 6px 0 var(--blue-d); }
-        .lvl-btn.done { background: var(--gold); box-shadow: 0 6px 0 var(--gold-d); }
-        .lvl-btn.chest { background: var(--purple); box-shadow: 0 6px 0 var(--purple-d); }
-        .lvl-btn.locked { background: var(--gray); box-shadow: 0 6px 0 var(--gray-d); color: var(--muted); cursor: not-allowed; }
-        .lvl-name { margin-top: 10px; font-weight: 800; font-size: 13px; color: var(--text); }
-
-        .shop-card {
-            display: flex; align-items: center; justify-content: space-between;
-            border: 2px solid var(--gray); border-bottom-width: 4px;
-            border-radius: 16px; padding: 16px; margin-bottom: 14px; background: #fff;
-        }
-        .buy-btn {
-            background: var(--blue); box-shadow: 0 4px 0 var(--blue-d); color: #fff;
-            border: none; border-radius: 12px; padding: 10px 16px; font-weight: 800; font-size: 14px; cursor: pointer;
-        }
-        .buy-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--blue-d); }
-        .buy-btn:disabled { background: var(--gray); box-shadow: none; color: var(--muted); }
-        .prog-row { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+        .lvl-btn.current { animation: pulseGlow 2s infinite; }
+        .lvl-btn:active { transform: translateY(5px); box-shadow: 0 2px 0 var(--green-dark); }
+        .lvl-btn.done { background: var(--gold); box-shadow: 0 7px 0 var(--gold-dark); }
+        .lvl-btn.chest { background: var(--purple); box-shadow: 0 7px 0 var(--purple-dark); }
+        .lvl-btn.locked { background: var(--gray); box-shadow: 0 7px 0 var(--gray-dark); color: var(--muted); cursor: not-allowed; }
+        .lvl-title { margin-top: 12px; font-weight: 800; font-size: 14px; color: var(--text); }
+        .prog-row { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
         .close-x { font-size: 22px; font-weight: 900; color: var(--muted); cursor: pointer; }
-        .prog-track { flex: 1; height: 15px; background: var(--gray); border-radius: 10px; overflow: hidden; }
-        .prog-bar { height: 100%; width: 0%; background: var(--green); transition: width 0.3s ease; }
+        .prog-track { flex: 1; height: 16px; background: var(--gray); border-radius: 12px; overflow: hidden; }
+        .prog-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #58cc02, #78e024); transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); border-radius: 12px; }
 
-        .q-title { font-size: 20px; font-weight: 800; margin-bottom: 14px; line-height: 1.3; }
+        .q-title { font-size: 21px; font-weight: 800; margin-bottom: 16px; line-height: 1.3; }
         .code-box {
-            background: #1e293b; color: #f8fafc; padding: 14px; border-radius: 14px;
-            font-family: "Courier New", monospace; font-size: 15px; line-height: 1.5;
-            margin-bottom: 18px; white-space: pre-wrap;
+            background: #1e293b; color: #f8fafc; padding: 16px; border-radius: 16px;
+            font-family: "Courier New", monospace; font-size: 16px; line-height: 1.5;
+            margin-bottom: 22px; white-space: pre-wrap; box-shadow: 0 4px 12px rgba(0,0,0,0.12);
         }
         .opt-card {
             background: #fff; border: 2px solid var(--gray); border-bottom-width: 4px;
-            border-radius: 14px; padding: 14px 16px; font-size: 15px; font-weight: 700;
-            margin-bottom: 10px; cursor: pointer;
+            border-radius: 16px; padding: 15px 18px; font-size: 16px; font-weight: 700;
+            margin-bottom: 12px; cursor: pointer; transition: all 0.15s;
         }
-        .opt-card.selected { border-color: var(--blue); background: #ddf4ff; color: var(--blue-d); }
+        .opt-card:active { transform: translateY(2px); border-bottom-width: 2px; }
+        .opt-card.selected { border-color: var(--blue); background: #ddf4ff; color: var(--blue-dark); }
 
         .drop-zone {
-            min-height: 54px; border-top: 2px solid var(--gray); border-bottom: 2px solid var(--gray);
-            padding: 8px 4px; display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; align-items: center;
+            min-height: 58px; border-top: 2px solid var(--gray); border-bottom: 2px solid var(--gray);
+            padding: 8px 4px; display: flex; flex-wrap: wrap; gap: 8px;
+            margin-bottom: 24px; align-items: center;
         }
-        .tokens-pool { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+        .tokens-pool { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
         .token {
             background: #fff; border: 2px solid var(--gray); border-bottom-width: 4px;
-            border-radius: 12px; padding: 9px 13px; font-family: "Courier New", monospace;
-            font-weight: 800; font-size: 15px; cursor: pointer;
+            border-radius: 12px; padding: 10px 14px; font-family: "Courier New", monospace;
+            font-weight: 800; font-size: 16px; cursor: pointer; transition: transform 0.1s;
         }
+        .token:active { transform: scale(0.95); }
         .token.used { background: var(--gray); color: transparent; border-color: var(--gray); pointer-events: none; }
 
         .sheet {
-            position: fixed; bottom: 0; left: 0; right: 0; padding: 16px 18px 24px 18px;
-            background: #fff; border-top: 2px solid var(--gray); z-index: 30;
+            position: fixed; bottom: 0; left: 0; right: 0;
+            padding: 18px 20px 26px 20px; background: #fff;
+            border-top: 2px solid var(--gray); z-index: 30;
+            transition: background 0.25s;
         }
         .sheet.ok { background: #d7ffb8; border-color: #b8f28b; }
         .sheet.err { background: #ffdfe0; border-color: #ffc1c1; }
-        .sheet-text { font-weight: 800; font-size: 16px; margin-bottom: 10px; display: none; }
-        .sheet.ok .sheet-text { display: block; color: var(--green-d); }
-        .sheet.err .sheet-text { display: block; color: var(--red-d); }
+        .sheet-text { font-weight: 800; font-size: 17px; margin-bottom: 12px; display: none; }
+        .sheet.ok .sheet-text { display: block; color: var(--green-dark); }
+        .sheet.err .sheet-text { display: block; color: var(--red-dark); }
 
         .btn-main {
-            width: 100%; padding: 15px; border: none; border-radius: 14px;
-            background: var(--green); box-shadow: 0 4px 0 var(--green-d);
-            color: #fff; font-size: 16px; font-weight: 800; text-transform: uppercase; cursor: pointer;
+            width: 100%; padding: 16px; border: none; border-radius: 16px;
+            background: var(--green); box-shadow: 0 4px 0 var(--green-dark);
+            color: #fff; font-size: 16px; font-weight: 800;
+            text-transform: uppercase; letter-spacing: 0.8px; cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
         }
-        .btn-main:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--green-d); }
+        .btn-main:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--green-dark); }
         .btn-main:disabled { background: var(--gray); box-shadow: none; color: var(--muted); cursor: not-allowed; }
-        .sheet.err .btn-main { background: var(--red); box-shadow: 0 4px 0 var(--red-d); }
+        .sheet.err .btn-main { background: var(--red); box-shadow: 0 4px 0 var(--red-dark); }
 
         .nav {
             position: fixed; bottom: 0; left: 0; right: 0; background: #fff;
-            border-top: 2px solid var(--gray); display: flex; justify-content: space-around; padding: 10px 0; z-index: 20;
+            border-top: 2px solid var(--gray); display: flex; justify-content: space-around;
+            padding: 10px 0; z-index: 20;
         }
-        .nav-btn { font-size: 12px; font-weight: 800; color: var(--muted); cursor: pointer; padding: 4px 10px; text-transform: uppercase; text-align: center; }
+        .nav-btn { font-size: 13px; font-weight: 800; color: var(--muted); cursor: pointer; padding: 6px 12px; text-transform: uppercase; }
         .nav-btn.active { color: var(--blue); }
-        .badge-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
-        .ach-card { border: 2px solid var(--gray); border-radius: 14px; padding: 12px; text-align: center; opacity: 0.45; }
-        .ach-card.open { opacity: 1; border-color: var(--gold); background: #fffbeb; }
         canvas#confetti { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 50; }
     </style>
 </head>
@@ -140,18 +170,19 @@
     <canvas id="confetti"></canvas>
 
     <div class="top-bar">
-        <div class="pill" style="color: #ff9600;">🔥 <span id="st-streak">1</span></div>
-        <div class="pill" style="color: #1cb0f6;">💎 <span id="st-gems">50</span></div>
-        <div class="pill" style="color: #ffc800;">⚡ <span id="st-xp">0</span></div>
-        <div class="pill" style="color: #ff4b4b;">❤️ <span id="st-hearts">5</span></div>
+        <div class="stat-pill" style="color: #ff9600;">🔥 <span id="st-streak">1</span></div>
+        <div class="stat-pill" style="color: #ffc800;">⚡ <span id="st-xp">0</span> XP</div>
+        <div class="stat-pill" style="color: #ff4b4b;">❤️ <span id="st-hearts">5</span></div>
     </div>
 
-    <!-- ЭКРАН 1: КАРТА УРОВНЕЙ -->
     <div id="scr-map" class="screen active">
-        <div id="map-container"></div>
+        <div class="unit-card anim-pop">
+            <small>Раздел 1 • Основы Python</small>
+            <h2>Синтаксис, логика и циклы</h2>
+        </div>
+        <div class="path" id="map-path"></div>
     </div>
 
-    <!-- ЭКРАН 2: УРОК -->
     <div id="scr-lesson" class="screen">
         <div class="prog-row">
             <div class="close-x" onclick="closeLesson()">✕</div>
@@ -163,44 +194,41 @@
             <div id="q-area"></div>
         </div>
     </div>
-
-    <!-- ЭКРАН 3: МАГАЗИН -->
     <div id="scr-shop" class="screen">
-        <h2 style="margin-top:0;">Магазин бонусов</h2>
-        <div class="shop-card anim-pop">
-            <div>
-                <div style="font-weight:800;font-size:16px;">❤️ Восстановить жизни</div>
-                <div style="font-size:13px;color:#64748b;">Полный запас (5 сердечек)</div>
-            </div>
-            <button class="buy-btn" id="btn-buy-hearts" onclick="buyHearts()">💎 30</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h2 style="margin:0;">Магазин</h2>
+            <div style="font-weight:800; color:var(--blue); font-size:18px;">💎 <span id="shop-gems">50</span></div>
         </div>
-        <div class="shop-card anim-pop">
-            <div>
-                <div style="font-weight:800;font-size:16px;">🧊 Заморозка серии</div>
-                <div style="font-size:13px;color:#64748b;">Сохранит ударный режим при пропуске</div>
-            </div>
-            <button class="buy-btn" id="btn-buy-freeze" onclick="buyFreeze()">💎 60</button>
+
+        <div class="anim-pop" style="background:#f8fafc; border:2px solid var(--gray); border-radius:18px; padding:16px; margin-bottom:14px;">
+            <h3 style="margin:0 0 6px 0; font-size:17px;">Восстановить жизни ❤️</h3>
+            <p style="margin:0 0 12px 0; color:#64748b; font-size:14px;">Посмотри короткую рекламу и получи +1 сердечко прямо сейчас.</p>
+            <button class="btn-main" style="background:var(--blue); box-shadow:0 4px 0 var(--blue-dark);" onclick="watchAdForHeart()">Смотреть рекламу (+1 ❤️)</button>
         </div>
-        <div class="shop-card anim-pop">
-            <div>
-                <div style="font-weight:800;font-size:16px;">⚡ Бустер +50 XP</div>
-                <div style="font-size:13px;color:#64748b;">Мгновенная прибавка к опыту</div>
-            </div>
-            <button class="buy-btn" id="btn-buy-xp" onclick="buyXp()">💎 40</button>
+
+        <div class="anim-pop" style="background:#f5ebff; border:2px solid var(--purple); border-radius:18px; padding:16px; margin-bottom:14px;">
+            <h3 style="margin:0 0 6px 0; font-size:17px; color:#6b21a8;">PyLingo PRO ⭐</h3>
+            <p style="margin:0 0 12px 0; color:#581c87; font-size:14px;">• Бесконечные жизни ❤️<br>• Доступ к бонусным практическим уровням<br>• Обучение без рекламы</p>
+            <button class="btn-main" id="btn-buy-pro" style="background:var(--purple); box-shadow:0 4px 0 var(--purple-dark);" onclick="buyStarsItem('pro_month')">Купить PRO — 150 ⭐</button>
+        </div>
+
+        <div class="anim-pop" style="background:#fffbeb; border:2px solid var(--gold); border-radius:18px; padding:16px; margin-bottom:14px;">
+            <h3 style="margin:0 0 6px 0; font-size:17px; color:#92400e;">Мешок кристаллов 💎</h3>
+            <p style="margin:0 0 12px 0; color:#78350f; font-size:14px;">Пополни запас на <b>500 💎</b> для будущих бонусов и заморозки серии.</p>
+            <button class="btn-main" style="background:var(--gold); color:#3c3c3c; box-shadow:0 4px 0 var(--gold-dark);" onclick="buyStarsItem('gems_500')">Купить 500 💎 — 50 ⭐</button>
         </div>
     </div>
 
-    <!-- ЭКРАН 4: ПРОФИЛЬ И ДОСТИЖЕНИЯ -->
     <div id="scr-profile" class="screen">
         <h2 style="margin-top:0;" id="p-name">Ученик</h2>
-        <div style="background:#f8fafc; border:2px solid var(--gray); border-radius:16px; padding:16px;">
-            <p style="margin:0 0 8px 0; font-weight:800;">🔥 Ударный режим: <span id="p-streak">1</span> дн. (<span id="p-freeze">0</span> заморозок)</p>
-            <p style="margin:0 0 8px 0; font-weight:800;">⚡ Всего опыта: <span id="p-xp">0</span> XP</p>
-            <p style="margin:0; font-weight:800;">🏆 Пройдено уровней: <span id="p-lvl">0</span> из 10</p>
+        <div class="anim-pop" style="background:#f8fafc; border:2px solid var(--gray); border-radius:18px; padding:20px; margin-bottom:16px;">
+            <p style="margin:0 0 12px 0; font-weight:800; font-size:16px;">🔥 Ударный режим: <span id="p-streak">1</span> дн.</p>
+            <p style="margin:0 0 12px 0; font-weight:800; font-size:16px;">⚡ Накоплено опыта: <span id="p-xp">0</span> XP</p>
+            <p style="margin:0 0 12px 0; font-weight:800; font-size:16px;">💎 Кристаллы: <span id="p-gems">50</span></p>
+            <p style="margin:0; font-weight:800; font-size:16px;">🏆 Пройдено этапов: <span id="p-lvl">0</span> из 7</p>
         </div>
-        <h3 style="margin-bottom:6px;">Достижения</h3>
-        <div class="badge-grid" id="ach-grid"></div>
-        <button class="btn-main" style="background:var(--red); box-shadow:0 4px 0 var(--red-d); margin-top:24px;" onclick="resetGame()">Сбросить прогресс</button>
+        <button class="btn-main" style="background:var(--blue); box-shadow:0 4px 0 var(--blue-dark); margin-bottom:12px;" onclick="enableReminders()">🔔 Напоминать об уроках в 19:00</button>
+        <button class="btn-main" style="background:var(--red); box-shadow:0 4px 0 var(--red-dark);" onclick="resetGame()">Сбросить прогресс</button>
     </div>
 
     <div class="sheet" id="sheet" style="display:none;">
@@ -209,31 +237,34 @@
     </div>
 
     <div class="nav" id="nav">
-        <div class="nav-btn active" onclick="goTab('map', this)">🏠 Курс</div>
-        <div class="nav-btn" onclick="goTab('shop', this)">💎 Магазин</div>
+        <div class="nav-btn active" onclick="goTab('map', this)">🏠 Обучение</div>
+        <div class="nav-btn" onclick="goTab('shop', this)">🛍 Магазин</div>
         <div class="nav-btn" onclick="goTab('profile', this)">👤 Профиль</div>
     </div>
+
     <script>
-        const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-        if (tg) {
-            tg.expand();
-            if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-                document.getElementById('p-name').innerText = tg.initDataUnsafe.user.first_name;
-            }
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            document.getElementById('p-name').innerText = tg.initDataUnsafe.user.first_name;
         }
 
-        let audioCtx = null;
+        const API_URL = "https://serveousercontent.com";
+        const CHANNEL_URL = "https://t.me";
+        const AdController = window.Adsgram ? window.Adsgram.init({ blockId: "ВАШ_BLOCK_ID" }) : null;
+        const userId = tg.initDataUnsafe?.user?.id || 0;
+
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
         function beep(ok) {
             try {
-                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const o = audioCtx.createOscillator(), g = audioCtx.createGain();
-                o.connect(g); g.connect(audioCtx.destination);
+                const o = ctx.createOscillator(), g = ctx.createGain();
+                o.connect(g); g.connect(ctx.destination);
                 o.type = ok ? 'sine' : 'sawtooth';
-                o.frequency.setValueAtTime(ok ? 523 : 185, audioCtx.currentTime);
-                o.frequency.setValueAtTime(ok ? 659 : 140, audioCtx.currentTime + 0.09);
-                g.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
-                o.start(); o.stop(audioCtx.currentTime + 0.25);
+                o.frequency.setValueAtTime(ok ? 523 : 190, ctx.currentTime);
+                o.frequency.setValueAtTime(ok ? 659 : 140, ctx.currentTime + 0.1);
+                g.gain.setValueAtTime(0.12, ctx.currentTime);
+                g.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                o.start(); o.stop(ctx.currentTime + 0.3);
             } catch (e) {}
         }
 
@@ -241,176 +272,162 @@
             const canvas = document.getElementById('confetti');
             const c = canvas.getContext('2d');
             canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-            const pieces = Array.from({length: 55}, () => ({
-                x: Math.random() * canvas.width, y: -20 - Math.random() * 80,
-                w: 8, h: 8, color: ['#58cc02', '#ffc800', '#1cb0f6', '#ff4b4b', '#ce82ff'][Math.floor(Math.random()*5)],
+            const pieces = Array.from({length: 65}, () => ({
+                x: Math.random() * canvas.width, y: -20 - Math.random() * 100,
+                w: 8 + Math.random() * 6, h: 8 + Math.random() * 6,
+                color: ['#58cc02', '#ffc800', '#1cb0f6', '#ff4b4b', '#ce82ff'][Math.floor(Math.random()*5)],
                 vy: 3 + Math.random() * 4, vx: -2 + Math.random() * 4
             }));
-            let f = 0;
+            let frames = 0;
             function loop() {
                 c.clearRect(0, 0, canvas.width, canvas.height);
-                pieces.forEach(p => { p.x += p.vx; p.y += p.vy; c.fillStyle = p.color; c.fillRect(p.x, p.y, p.w, p.h); });
-                if (++f < 95) requestAnimationFrame(loop);
+                pieces.forEach(p => {
+                    p.x += p.vx; p.y += p.vy;
+                    c.fillStyle = p.color; c.fillRect(p.x, p.y, p.w, p.h);
+                });
+                if (++frames < 110) requestAnimationFrame(loop);
                 else c.clearRect(0, 0, canvas.width, canvas.height);
             }
             loop();
         }
-
-        let state = JSON.parse(localStorage.getItem('pylingo_pro_v4')) || {
-            xp: 0, gems: 50, hearts: 5, unlocked: 1, streak: 1, freeze: 0, lastDay: new Date().toDateString()
+        let state = JSON.parse(localStorage.getItem('pylingo_v3')) || {
+            xp: 0, unlocked: 1, streak: 1, gems: 50, isPro: false, lastDay: new Date().toDateString()
         };
+        if (state.gems === undefined) state.gems = 50;
+        if (state.isPro === undefined) state.isPro = false;
+
         const today = new Date().toDateString();
         if (state.lastDay !== today) {
             const yest = new Date(Date.now() - 86400000).toDateString();
-            if (state.lastDay === yest) state.streak++;
-            else if (state.freeze > 0) state.freeze--;
-            else state.streak = 1;
+            state.streak = (state.lastDay === yest) ? state.streak + 1 : 1;
             state.lastDay = today;
-            localStorage.setItem('pylingo_pro_v4', JSON.stringify(state));
+            localStorage.setItem('pylingo_v3', JSON.stringify(state));
         }
 
-        const UNITS = [
-            {
-                title: "Раздел 1 • База Python", sub: "Первые шаги в коде", cls: "",
-                nodes: [
-                    { id: 1, title: "Вывод print", icon: "★", x: 0 },
-                    { id: 2, title: "Переменные", icon: "⚡", x: -42 },
-                    { id: 3, title: "Строки str", icon: "🔤", x: 42 },
-                    { id: 4, title: "Сундук кристаллов", icon: "🎁", x: 0, chest: true },
-                    { id: 5, title: "Условия if", icon: "🔀", x: -42 }
-                ]
-            },
-            {
-                title: "Раздел 2 • Структуры и циклы", sub: "Продвинутая логика", cls: "u2",
-                nodes: [
-                    { id: 6, title: "Циклы for", icon: "🔄", x: 42 },
-                    { id: 7, title: "Списки list", icon: "📋", x: 0 },
-                    { id: 8, title: "Тайный сундук", icon: "💎", x: -42, chest: true },
-                    { id: 9, title: "Функции def", icon: "⚙️", x: 42 },
-                    { id: 10, title: "Финал курса", icon: "🏆", x: 0 }
-                ]
-            }
+        const NODES = [
+            { id: 1, title: "Вывод текста", icon: "★", x: 0 },
+            { id: 2, title: "Переменные", icon: "⚡", x: -46 },
+            { id: 3, title: "Сундук канала", icon: "🎁", x: 46, chest: true },
+            { id: 4, title: "Условия if", icon: "🔀", x: 0 },
+            { id: 5, title: "Циклы for", icon: "🔄", x: -46 },
+            { id: 6, title: "Списки list", icon: "🏆", x: 0 },
+            { id: 7, title: "PRO Практика", icon: "👑", x: 46, proOnly: true }
         ];
 
-        let curLvl = 1, step = 0, task = null, ans = null, tokens = [], checked = false;
+        let hearts = 5, curLvl = 1, step = 0, task = null, ans = null, tokens = [], checked = false;
 
         function buildTask(lvl, s) {
             const r = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
             if (s % 2 === 0) {
                 if (lvl === 1) {
-                    const w = ["Python", "Привет", "Старт"][r(0, 2)];
-                    return { mode: 'blocks', q: `Собери вывод текста "${w}"`, pool: ['print', '(', `"${w}"`, ')', 'echo'].sort(()=>Math.random()-0.5), ok: `print("${w}")`, hint: `Используй print("${w}")` };
+                    const w = ["Привет", "Код", "Мир"][r(0, 2)];
+                    return { mode: 'blocks', q: `Собери команду вывода слова "${w}"`, pool: ['print', '(', `"${w}"`, ')', 'echo'].sort(()=>Math.random()-0.5), ok: `print("${w}")`, hint: `Пишем print("${w}")` };
                 }
                 if (lvl === 2) {
-                    const n = r(10, 90);
-                    return { mode: 'blocks', q: `Запиши в переменную score число ${n}`, pool: ['score', '=', `${n}`, '==', 'var'].sort(()=>Math.random()-0.5), ok: `score=${n}`, hint: `score = ${n}` };
+                    const n = r(10, 50);
+                    return { mode: 'blocks', q: `Создай переменную hp со значением ${n}`, pool: ['hp', '=', `${n}`, '==', 'var'].sort(()=>Math.random()-0.5), ok: `hp=${n}`, hint: `Сначала имя hp, затем = и число ${n}.` };
                 }
-                if (lvl === 3) {
-                    return { mode: 'blocks', q: `Склей две строки "Py" и "Go"`, pool: ['"Py"', '+', '"Go"', '*', 'print'].sort(()=>Math.random()-0.5), ok: `"Py"+"Go"`, hint: `Строки объединяют знаком +` };
+                if (lvl === 4) {
+                    return { mode: 'blocks', q: `Собери условие: если score больше 5`, pool: ['if', 'score', '>', '5', ':', 'then'].sort(()=>Math.random()-0.5), ok: `ifscore>5:`, hint: `Условие начинается с if и заканчивается двоеточием :` };
                 }
                 if (lvl === 5) {
-                    return { mode: 'blocks', q: `Собери проверку: если x равно 10`, pool: ['if', 'x', '==', '10', ':', '='].sort(()=>Math.random()-0.5), ok: `ifx==10:`, hint: `Для сравнения используют двойное равно == и двоеточие :` };
-                }
-                if (lvl === 6) {
-                    const k = r(3, 8);
-                    return { mode: 'blocks', q: `Собери цикл на ${k} повторений`, pool: ['for', 'i', 'in', `range(${k})`, ':'].sort(()=>Math.random()-0.5), ok: `foriinrange(${k}):`, hint: `for i in range(${k}):` };
+                    const k = r(3, 6);
+                    return { mode: 'blocks', q: `Собери заголовок цикла на ${k} шагов`, pool: ['for', 'i', 'in', `range(${k})`, ':'].sort(()=>Math.random()-0.5), ok: `foriinrange(${k}):`, hint: `Формат: for i in range(${k}):` };
                 }
                 if (lvl === 7) {
-                    return { mode: 'blocks', q: `Создай список из чисел 1 и 2`, pool: ['nums', '=', '', '1,', '2', ''].sort(()=>Math.random()-0.5), ok: `nums=`, hint: `Списки берутся в квадратные скобки ` };
+                    return { mode: 'blocks', q: `PRO-задача: объяви функцию start()`, pool: ['def', 'start', '(', ')', ':', 'func'].sort(()=>Math.random()-0.5), ok: `defstart():`, hint: `Функции в Python объявляются через def start():` };
                 }
-                return { mode: 'blocks', q: `Объяви функцию hello без параметров`, pool: ['def', 'hello', '()', ':', 'func'].sort(()=>Math.random()-0.5), ok: `defhello():`, hint: `Функция начинается со слова def hello():` };
+                return { mode: 'blocks', q: `Выведи первый элемент списка arr`, pool: ['print', '(', 'arr', '[0]', ')', '[1]'].sort(()=>Math.random()-0.5), ok: `print(arr[0])`, hint: `Первый индекс в списке всегда 0: arr[0].` };
             }
-            const a = r(3, 12), b = r(2, 9);
-            if (lvl === 3) {
-                return { mode: 'choice', q: 'Что выведет этот код?', code: `print("${a}" + "${b}")`, opts: [`${a}${b}`, String(a+b), 'Ошибку'].sort(()=>Math.random()-0.5), ok: `${a}${b}`, hint: 'Числа в кавычках склеиваются как текст.' };
-            }
-            if (lvl === 7 || lvl === 10) {
-                return { mode: 'choice', q: 'Что выведет код?', code: `arr = ["cat", "dog", "fox"]\nprint(arr[-1])`, opts: ['fox', 'cat', 'dog'].sort(()=>Math.random()-0.5), ok: 'fox', hint: 'Индекс -1 всегда берет последний элемент списка.' };
-            }
-            if (lvl === 9) {
-                return { mode: 'choice', q: 'Что вернет вызов функции?', code: `def add(x):\n    return x * 2\nprint(add(${a}))`, opts: [String(a*2), String(a+2), 'add'].sort(()=>Math.random()-0.5), ok: String(a*2), hint: `Функция умножает переданное число ${a} на 2.` };
-            }
-            const sum = String(a + b);
-            return { mode: 'choice', q: 'Что окажется на экране?', code: `x = ${a}\ny = ${b}\nprint(x + y)`, opts: [sum, `${a}${b}`, String(a*b)].sort(()=>Math.random()-0.5), ok: sum, hint: `${a} + ${b} = ${sum}` };
+            const a = r(4, 12), b = r(2, 9), sum = String(a + b);
+            return {
+                mode: 'choice', q: 'Что выведет этот код на экран?',
+                code: `a = ${a}\nb = ${b}\nprint(a + b)`,
+                opts: [sum, String(a + b + 2), `${a}${b}`].sort(()=>Math.random()-0.5),
+                ok: sum, hint: `Складываются два числа: ${a} + ${b} = ${sum}.`
+            };
         }
-        function save() { localStorage.setItem('pylingo_pro_v4', JSON.stringify(state)); syncUI(); }
 
-        function syncUI() {
+        function syncStats() {
             document.getElementById('st-streak').innerText = state.streak;
-            document.getElementById('st-gems').innerText = state.gems;
             document.getElementById('st-xp').innerText = state.xp;
-            document.getElementById('st-hearts').innerText = state.hearts;
+            document.getElementById('st-hearts').innerText = state.isPro ? '∞' : hearts;
             document.getElementById('p-streak').innerText = state.streak;
-            document.getElementById('p-freeze').innerText = state.freeze;
             document.getElementById('p-xp').innerText = state.xp;
+            document.getElementById('p-gems').innerText = state.gems;
+            document.getElementById('shop-gems').innerText = state.gems;
             document.getElementById('p-lvl').innerText = state.unlocked - 1;
-            document.getElementById('btn-buy-hearts').disabled = (state.gems < 30 || state.hearts >= 5);
-            document.getElementById('btn-buy-freeze').disabled = (state.gems < 60);
-            document.getElementById('btn-buy-xp').disabled = (state.gems < 40);
-            renderAchievements();
+            if (state.isPro) {
+                const proBtn = document.getElementById('btn-buy-pro');
+                if (proBtn) { proBtn.innerText = 'PRO Активен ✅'; proBtn.disabled = true; }
+            }
         }
 
-        function renderAchievements() {
-            const list = [
-                { icon: '🌱', name: 'Первый шаг', ok: state.unlocked >= 2 },
-                { icon: '⚡', name: '100 XP опыта', ok: state.xp >= 100 },
-                { icon: '💎', name: 'Богач (100 💎)', ok: state.gems >= 100 },
-                { icon: '🏆', name: 'Мастер Python', ok: state.unlocked > 10 }
-            ];
-            document.getElementById('ach-grid').innerHTML = list.map(a => `
-                <div class="ach-card ${a.ok ? 'open' : ''}">
-                    <div style="font-size:28px;">${a.icon}</div>
-                    <div style="font-weight:800;font-size:13px;margin-top:4px;">${a.name}</div>
-                </div>
-            `).join('');
+        async function claimChannelChest() {
+            try {
+                const res = await fetch(`${API_URL}/check-sub?user_id=${userId}`);
+                const data = await res.json();
+                if (data.subscribed) {
+                    state.xp += 50;
+                    state.gems += 100;
+                    state.unlocked++;
+                    localStorage.setItem('pylingo_v3', JSON.stringify(state));
+                    beep(true); fireConfetti();
+                    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+                    tg.showAlert('Подписка подтверждена! Сундук открыт: +100 💎 и +50 XP!');
+                    drawMap();
+                } else {
+                    tg.showConfirm('Чтобы открыть сундук, подпишись на наш канал со шпаргалками по Python!', (ok) => {
+                        if (ok) tg.openTelegramLink(CHANNEL_URL);
+                    });
+                }
+            } catch (e) {
+                tg.showAlert('Не удалось проверить подписку. Убедись, что сервер запущен!');
+            }
         }
-
         function drawMap() {
-            syncUI();
-            const box = document.getElementById('map-container');
+            syncStats();
+            const box = document.getElementById('map-path');
             box.innerHTML = '';
-            UNITS.forEach(u => {
-                const banner = document.createElement('div');
-                banner.className = `unit-banner ${u.cls} anim-pop`;
-                banner.innerHTML = `<small>${u.sub}</small><h2>${u.title}</h2>`;
-                box.appendChild(banner);
+            NODES.forEach((n, idx) => {
+                const done = n.id < state.unlocked;
+                const cur = n.id === state.unlocked;
+                const lock = n.id > state.unlocked || (n.proOnly && !state.isPro);
 
-                const path = document.createElement('div');
-                path.className = 'path';
-                u.nodes.forEach(n => {
-                    const done = n.id < state.unlocked;
-                    const cur = n.id === state.unlocked;
-                    const lock = n.id > state.unlocked;
+                const div = document.createElement('div');
+                div.className = 'node anim-pop';
+                div.style.animationDelay = `${idx * 0.06}s`;
+                div.style.transform = `translateX(${n.x}px)`;
 
-                    const wrap = document.createElement('div');
-                    wrap.className = 'node';
-                    wrap.style.transform = `translateX(${n.x}px)`;
+                if (cur && !lock) {
+                    const b = document.createElement('div');
+                    b.className = 'bubble';
+                    b.innerText = n.chest ? 'ОТКРЫТЬ' : 'СТАРТ';
+                    div.appendChild(b);
+                }
 
-                    if (cur) {
-                        const t = document.createElement('div');
-                        t.className = 'tag'; t.innerText = n.chest ? 'ОТКРЫТЬ' : 'СТАРТ';
-                        wrap.appendChild(t);
+                const btn = document.createElement('button');
+                btn.className = `lvl-btn ${done ? 'done' : ''} ${cur && !lock ? 'current' : ''} ${n.chest && !lock ? 'chest' : ''} ${lock ? 'locked' : ''}`;
+                btn.innerText = lock ? '🔒' : (done ? '✓' : n.icon);
+                btn.onclick = () => {
+                    if (n.proOnly && !state.isPro) {
+                        tg.showAlert('Этот бонусный уровень доступен только владельцам PyLingo PRO! Загляни в Магазин.');
+                        return;
                     }
+                    if (lock) { if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning'); return; }
+                    if (n.chest && cur) {
+                        claimChannelChest();
+                        return;
+                    }
+                    openLesson(n.id);
+                };
 
-                    const btn = document.createElement('button');
-                    btn.className = `lvl-btn ${u.cls} ${done ? 'done' : ''} ${n.chest && !lock ? 'chest' : ''} ${lock ? 'locked' : ''}`;
-                    btn.innerText = lock ? '🔒' : (done ? '✓' : n.icon);
-                    btn.onclick = () => {
-                        if (lock) { if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning'); return; }
-                        if (n.chest && cur) {
-                            state.gems += 40; state.unlocked++; save();
-                            beep(true); fireConfetti(); drawMap(); return;
-                        }
-                        if (state.hearts <= 0) { alert('Закончились жизни! Загляни в Магазин 💎'); return; }
-                        openLesson(n.id);
-                    };
+                const lbl = document.createElement('div');
+                lbl.className = 'lvl-title';
+                lbl.innerText = n.title;
 
-                    const lbl = document.createElement('div');
-                    lbl.className = 'lvl-name'; lbl.innerText = n.title;
-                    wrap.appendChild(btn); wrap.appendChild(lbl);
-                    path.appendChild(wrap);
-                });
-                box.appendChild(path);
+                div.appendChild(btn); div.appendChild(lbl);
+                box.appendChild(div);
             });
         }
 
@@ -419,12 +436,10 @@
             el.classList.add('active');
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.getElementById(`scr-${tab}`).classList.add('active');
-            if (tab === 'map') drawMap(); else syncUI();
+            syncStats();
+            if (tab === 'map') drawMap();
         }
 
-        function buyHearts() { if (state.gems >= 30 && state.hearts < 5) { state.gems -= 30; state.hearts = 5; save(); beep(true); } }
-        function buyFreeze() { if (state.gems >= 60) { state.gems -= 60; state.freeze++; save(); beep(true); } }
-        function buyXp() { if (state.gems >= 40) { state.gems -= 40; state.xp += 50; save(); beep(true); fireConfetti(); } }
         function closeLesson() {
             document.getElementById('sheet').style.display = 'none';
             document.getElementById('nav').style.display = 'flex';
@@ -434,7 +449,7 @@
         }
 
         function openLesson(id) {
-            curLvl = id; step = 0;
+            curLvl = id; step = 0; syncStats();
             document.getElementById('nav').style.display = 'none';
             document.getElementById('sheet').style.display = 'block';
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -444,38 +459,54 @@
 
         function nextStep() {
             checked = false; ans = null; tokens = [];
-            const sheet = document.getElementById('sheet'); sheet.className = 'sheet';
-            const btn = document.getElementById('action-btn'); btn.disabled = true; btn.innerText = 'Проверить';
+            const sheet = document.getElementById('sheet');
+            sheet.className = 'sheet';
+            const btn = document.getElementById('action-btn');
+            btn.disabled = true; btn.innerText = 'Проверить';
             document.getElementById('prog-bar').style.width = `${(step / 5) * 100}%`;
 
-            if (state.hearts <= 0) {
+            const body = document.getElementById('lesson-body');
+            body.classList.remove('anim-pop');
+            void body.offsetWidth;
+            body.classList.add('anim-pop');
+
+            if (hearts <= 0 && !state.isPro) {
                 document.getElementById('q-title').innerText = 'Жизни закончились 💔';
                 document.getElementById('q-code').style.display = 'none';
-                document.getElementById('q-area').innerHTML = '<p style="color:#64748b;font-weight:700;">Восстанови сердечки в Магазине за кристаллы 💎</p>';
-                btn.disabled = false; btn.innerText = 'На карту'; btn.onclick = closeLesson; return;
+                document.getElementById('q-area').innerHTML = `
+                    <p style="color:#64748b;font-weight:700;margin-bottom:16px;">Посмотри короткую рекламу, чтобы продолжить урок прямо сейчас!</p>
+                    <button class="btn-main" style="background:var(--blue); box-shadow:0 4px 0 var(--blue-dark);" onclick="watchAdForHeart(true)">Смотреть рекламу (+1 ❤️)</button>
+                `;
+                btn.disabled = false; btn.innerText = 'На карту'; btn.onclick = closeLesson;
+                return;
             }
-
             if (step >= 5) {
                 document.getElementById('prog-bar').style.width = '100%';
-                state.xp += 35; state.gems += 15;
-                if (curLvl === state.unlocked) state.unlocked++;
-                save(); beep(true); fireConfetti();
-                document.getElementById('q-title').innerText = 'Уровень пройден! 🎉';
+                state.xp += 30;
+                state.gems += 10;
+                if (curLvl === state.unlocked && state.unlocked < NODES.length) state.unlocked++;
+                localStorage.setItem('pylingo_v3', JSON.stringify(state));
+                syncStats(); beep(true); fireConfetti();
+
+                document.getElementById('q-title').innerText = 'Урок пройден! 🎉';
                 document.getElementById('q-code').style.display = 'block';
-                document.getElementById('q-code').innerText = `Награда: +35 XP и +15 💎\nУдарный режим: ${state.streak} дн. 🔥`;
+                document.getElementById('q-code').innerText = `Получено: +30 XP и +10 💎\nУдарный режим: ${state.streak} дн. 🔥`;
                 document.getElementById('q-area').innerHTML = '';
-                btn.disabled = false; btn.innerText = 'Продолжить'; btn.onclick = closeLesson; return;
+                btn.disabled = false; btn.innerText = 'Продолжить'; btn.onclick = closeLesson;
+                return;
             }
 
             task = buildTask(curLvl, step);
             document.getElementById('q-title').innerText = task.q;
-            const area = document.getElementById('q-area'); area.innerHTML = '';
+            const area = document.getElementById('q-area');
+            area.innerHTML = '';
 
             if (task.mode === 'choice') {
                 document.getElementById('q-code').style.display = 'block';
                 document.getElementById('q-code').innerText = task.code;
                 task.opts.forEach(o => {
-                    const d = document.createElement('div'); d.className = 'opt-card'; d.innerText = o;
+                    const d = document.createElement('div');
+                    d.className = 'opt-card'; d.innerText = o;
                     d.onclick = () => {
                         if (checked) return;
                         document.querySelectorAll('.opt-card').forEach(x => x.classList.remove('selected'));
@@ -487,26 +518,33 @@
                 document.getElementById('q-code').style.display = 'none';
                 const zone = document.createElement('div'); zone.className = 'drop-zone';
                 const pool = document.createElement('div'); pool.className = 'tokens-pool';
+
                 function renderBlocks() {
                     zone.innerHTML = '';
                     tokens.forEach((t, i) => {
-                        const c = document.createElement('div'); c.className = 'token anim-pop'; c.innerText = t.txt;
+                        const c = document.createElement('div');
+                        c.className = 'token anim-pop'; c.innerText = t.txt;
                         c.onclick = () => {
                             if (checked) return;
                             tokens.splice(i, 1); t.el.classList.remove('used');
                             ans = tokens.map(x => x.txt).join('');
-                            btn.disabled = tokens.length === 0; renderBlocks();
+                            btn.disabled = tokens.length === 0;
+                            renderBlocks();
                         };
                         zone.appendChild(c);
                     });
                 }
+
                 task.pool.forEach(txt => {
-                    const c = document.createElement('div'); c.className = 'token'; c.innerText = txt;
+                    const c = document.createElement('div');
+                    c.className = 'token'; c.innerText = txt;
                     c.onclick = () => {
                         if (checked) return;
-                        c.classList.add('used'); tokens.push({ txt, el: c });
+                        c.classList.add('used');
+                        tokens.push({ txt, el: c });
                         ans = tokens.map(x => x.txt).join('');
-                        btn.disabled = false; renderBlocks();
+                        btn.disabled = false;
+                        renderBlocks();
                     };
                     pool.appendChild(c);
                 });
@@ -516,24 +554,102 @@
         }
 
         function checkStep() {
-            const sheet = document.getElementById('sheet'), msg = document.getElementById('sheet-text'), btn = document.getElementById('action-btn');
+            const sheet = document.getElementById('sheet');
+            const msg = document.getElementById('sheet-text');
+            const btn = document.getElementById('action-btn');
+
             if (!checked) {
                 checked = true;
                 if (ans === task.ok) {
-                    step++; sheet.className = 'sheet ok'; msg.innerText = 'Отлично! Так держать!'; beep(true);
-                    if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+                    step++;
+                    sheet.className = 'sheet ok';
+                    msg.innerText = 'Супер! Правильный ответ.';
+                    beep(true);
+                    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
                 } else {
-                    state.hearts--; save(); sheet.className = 'sheet err'; msg.innerText = `Ошибка: ${task.hint}`;
-                    const b = document.getElementById('lesson-body'); b.classList.remove('anim-shake'); void b.offsetWidth; b.classList.add('anim-shake');
-                    beep(false); if (tg && tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
+                    if (!state.isPro) hearts--;
+                    syncStats();
+                    sheet.className = 'sheet err';
+                    msg.innerText = `Ошибка: ${task.hint}`;
+                    const body = document.getElementById('lesson-body');
+                    body.classList.remove('anim-shake'); void body.offsetWidth; body.classList.add('anim-shake');
+                    beep(false);
+                    if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('error');
                 }
                 btn.innerText = 'Далее';
-            } else { nextStep(); }
+            } else {
+                nextStep();
+            }
+        }
+
+        function watchAdForHeart(resumeLesson = false) {
+            if (state.isPro) {
+                tg.showAlert('С подпиской PyLingo PRO у тебя бесконечные жизни!');
+                return;
+            }
+            if (!AdController) {
+                tg.showAlert('Рекламный блок Adsgram не подключен (укажите blockId в коде).');
+                return;
+            }
+            AdController.show().then(() => {
+                hearts++;
+                syncStats();
+                beep(true);
+                tg.showAlert('Спасибо за просмотр! Начислено +1 ❤️');
+                if (resumeLesson) nextStep();
+            }).catch(() => {
+                tg.showAlert('Не удалось загрузить рекламу. Попробуй позже.');
+            });
+        }
+
+        async function buyStarsItem(itemId) {
+            try {
+                const res = await fetch(`${API_URL}/create-invoice`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, item: itemId })
+                });
+                const data = await res.json();
+                if (data.invoice_url) {
+                    tg.openInvoice(data.invoice_url, (status) => {
+                        if (status === 'paid') {
+                            if (itemId === 'pro_month') {
+                                state.isPro = true;
+                                tg.showAlert('Поздравляем! Подписка PyLingo PRO активирована!');
+                            } else if (itemId === 'gems_500') {
+                                state.gems += 500;
+                                tg.showAlert('Баланс пополнен на +500 💎!');
+                            }
+                            localStorage.setItem('pylingo_v3', JSON.stringify(state));
+                            syncStats();
+                            drawMap();
+                        }
+                    });
+                }
+            } catch (e) {
+                tg.showAlert('Ошибка связи с сервером оплаты. Проверь, запущен ли server.py!');
+            }
+        }
+
+        async function enableReminders() {
+            try {
+                await fetch(`${API_URL}/enable-reminder`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId })
+                });
+                tg.showAlert('Готово! Бот будет напоминать об уроках каждый день в 19:00 🔥');
+            } catch (e) {
+                tg.showAlert('Ошибка связи с сервером.');
+            }
         }
 
         function resetGame() {
-            state = { xp: 0, gems: 50, hearts: 5, unlocked: 1, streak: 1, freeze: 0, lastDay: new Date().toDateString() };
-            save(); drawMap(); alert('Прогресс сброшен!');
+            state = { xp: 0, unlocked: 1, streak: 1, gems: 50, isPro: false, lastDay: new Date().toDateString() };
+            hearts = 5;
+            localStorage.setItem('pylingo_v3', JSON.stringify(state));
+            drawMap();
+            alert('Прогресс сброшен!');
         }
 
         drawMap();
